@@ -1,10 +1,16 @@
 
 
+
+var assembly = typeof(Program).Assembly;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddCarter();
-
-var assembly = typeof(Program).Assembly;
+builder.Services.AddMarten(config =>
+{
+    config.Connection(builder.Configuration.GetConnectionString("Database")!);
+    config.Schema.For<ShoppingCart>().Identity(x => x.UserName);
+}).UseLightweightSessions();
 
 builder.Services.AddMediatR(config =>
 {
@@ -13,8 +19,15 @@ builder.Services.AddMediatR(config =>
     config.AddOpenBehavior(typeof(LoggingBehaviour<,>));
 });
 
+builder.Services.AddScoped<IBasketRepository, BasketRepository>();
+
+??builder.Services.AddExceptionHandler<CustomExceptionHandler>();
+
 var app = builder.Build();
 
 app.MapCarter();
+
+
+app.UseExceptionHandler(options => { });
 
 app.Run();
