@@ -1,6 +1,7 @@
 ﻿
 
 
+using Discount.Grpc;
 using HealthChecks.UI.Client;
 
 var assembly = typeof(Program).Assembly;
@@ -34,6 +35,11 @@ builder.Services.AddStackExchangeRedisCache(opts =>
 });
 
 builder.Services.AddExceptionHandler<CustomExceptionHandler>();
+
+builder.Services.AddGrpcClient<DiscountProtoService.DiscountProtoServiceClient>(opts =>
+{
+    opts.Address = new Uri(builder.Configuration["GrpcSettings:DiscountUrl"]!);
+});
 
 var app = builder.Build();
 
